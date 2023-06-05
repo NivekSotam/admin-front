@@ -1,21 +1,32 @@
-import { Card } from 'antd';
+import { Card, Button } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+
 const { Meta } = Card;
 
-export const CardBase = (props) => {
-   const { produto } = props;
-    return (
-        <>
-            <Card
-                hoverable
-                style={{
-                    width: 240,
-                }}
-                cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
-            >
-                <Meta title={produto} description="tem nada aqui" />
-            </Card>
-        </>
-    )
-}
+const CardBase = ({ produto }) => {
+  const { produto: nomeProduto, valor, imagem, id } = produto;
+
+  const navigate = useNavigate();
+
+  const handleVerDetalhes = () => {
+    navigate(`/produto/${id}`);
+  };
+
+  return (
+    <Card
+      hoverable
+      style={{
+        width: 240,
+        margin: '10px',
+      }}
+      cover={<img src={`http://localhost:81/faculdade/admin/fotos/${imagem}p.jpg`} alt={nomeProduto} type="image/jpeg" />}
+    >
+      <Meta title={nomeProduto} description={valor} />
+      <Button type="primary" style={{ marginTop: '10px' }} onClick={handleVerDetalhes}>
+        Ver Detalhes
+      </Button>
+    </Card>
+  );
+};
 
 export default CardBase;
