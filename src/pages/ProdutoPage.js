@@ -1,4 +1,4 @@
-import {  useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Layout, Typography, Row, Col, Modal, Image, Input, Button } from 'antd';
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
@@ -13,6 +13,7 @@ const ProdutoPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [freteValue, setFreteValue] = useState('');
   const [freteResult, setFreteResult] = useState(null);
+  const [parcelas, setParcelas] = useState(1);
 
   const getProduto = useCallback(async () => {
     try {
@@ -23,27 +24,30 @@ const ProdutoPage = () => {
     }
   }, [id]);
 
+//   const handleFreteCalculate = async () => {
+//     try {
+//       const { data } = await axios.post('https://frete-api.herokuapp.com/calcular', {
+//         cep: freteValue,
+//       });
+//       setFreteResult(data);
+//     } catch (error) {
+//       console.warn(error);
+//     }
+//   };
+
   const handleImageClick = () => {
     setIsModalVisible(true);
   };
 
-  const handleModalClose = () => {
-    setIsModalVisible(false);
+  const DefinirParcelas = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (value >= 1 && value <= 6) {
+      setParcelas(value);
+    }
   };
 
-  const handleFreteCalculate = async () => {
-    try {
-      const { data } = await axios.post('https://frete-api.herokuapp.com/calcular', {
-        cep: freteValue,
-        peso: produtoRepo.peso,
-        altura: produtoRepo.altura,
-        largura: produtoRepo.largura,
-        comprimento: produtoRepo.comprimento,
-      });
-      setFreteResult(data);
-    } catch (error) {
-      console.warn(error);
-    }
+  const handleParcelasClick = (value) => {
+    setParcelas(value);
   };
 
   useEffect(() => {
@@ -79,31 +83,33 @@ const ProdutoPage = () => {
                     </Title>
                   </Col>
                   <Col span={12}>
+
                     <Title level={4} style={{ color: 'green', fontWeight: 'bold' }}>
-                      6x de R$ {parseFloat(produtoRepo.valor / 6).toFixed(2)}
+
+                    {/* <Input
+                    type="number"
+                    min={1}
+                    max={6}
+                    value={parcelas}
+                    onChange={DefinirParcelas}
+                    style={{ width: '50px', marginRight: '8px' }}
+                  /> */}
+
+                      {parcelas}x de R$ {(produtoRepo.valor / parcelas).toFixed(2)}
+                 <div style={{ marginTop: '12px' }}>
+                  <Button onClick={() => handleParcelasClick(1)}>1x</Button>
+                  <Button onClick={() => handleParcelasClick(2)}>2x</Button>
+                  <Button onClick={() => handleParcelasClick(3)}>3x</Button>
+                  <Button onClick={() => handleParcelasClick(4)}>4x</Button>
+                  <Button onClick={() => handleParcelasClick(5)}>5x</Button>
+                  <Button onClick={() => handleParcelasClick(6)}>6x</Button>
+                 </div>
+                  
+
                     </Title>
                   </Col>
                 </Row>
-                <Row gutter={16}>
-                  <Col span={16}>
-                    <Input
-                      placeholder="Digite o CEP"
-                      value={freteValue}
-                      onChange={(e) => setFreteValue(e.target.value)}
-                      style={{ marginRight: '16px' }}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Button type="primary" onClick={handleFreteCalculate}>
-                      Calcular Frete
-                    </Button>
-                  </Col>
-                </Row>
-                {freteResult && (
-                  <Paragraph style={{ fontSize: '16px', marginTop: '12px' }}>
-                    Valor do frete: R$ {freteResult.valor}
-                  </Paragraph>
-                )}
+                
               </Col>
             </Row>
           ) : (
