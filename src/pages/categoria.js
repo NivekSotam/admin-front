@@ -74,7 +74,7 @@ export const CategoriaPage = () => {
           <Breadcrumb.Item>Categoria</Breadcrumb.Item>
         </Breadcrumb>
         <Layout style={{ padding: '24px 0', background: colorBgContainer }}>
-          <Sider style={{ background: colorBgContainer }} width={200}>
+          <Sider style={{ background: colorBgContainer }} width={200} collapsedWidth={0} breakpoint="md" collapsible>
             <Menu mode="inline" defaultSelectedKeys={['1']} style={{ height: '100%' }}>
               <SubMenu key="sub1" title="Categorias">
                 {categoria.map((categoriaItem) => (
@@ -85,15 +85,17 @@ export const CategoriaPage = () => {
               </SubMenu>
             </Menu>
           </Sider>
-          <Content className="site-layout" style={{ padding: '0 50px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-              {repo.map((produto) => (
-                <CardBase
-                  key={produto.id}
-                  produto={produto}
-                  onVerDetalhes={() => handleVerDetalhes(produto.id)}
-                />
-              ))}
+          <Content className="site-layout" style={{ padding: '0 24px' }}>
+            <div style={{ background: '#fff', padding: 24 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {repo.map((produto) => (
+                  <CardBase
+                    key={produto.id}
+                    produto={produto}
+                    onVerDetalhes={() => handleVerDetalhes(produto.id)}
+                  />
+                ))}
+              </div>
             </div>
           </Content>
         </Layout>

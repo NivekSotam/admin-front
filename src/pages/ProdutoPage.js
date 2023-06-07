@@ -1,12 +1,13 @@
+import React from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Layout, Typography, Row, Col, Modal, Image, Input, Button } from 'antd';
+import { Layout, Typography, Row, Col, Modal, Image, Input, Button, Breadcrumb } from 'antd';
 import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import CustomHeader from '../components/header';
 import CardBase from '../components/card';
-import { ShoppingCartOutlined } from '@ant-design/icons'; // Importe o ícone de carrinho de compras
+import { ShoppingCartOutlined } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
-
+import parse from 'html-react-parser';
 
 const { Content, Footer } = Layout;
 const { Title, Paragraph } = Typography;
@@ -17,8 +18,8 @@ const ProdutoPage = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [parcelas, setParcelas] = useState(1);
   const [produtosRelacionados, setProdutosRelacionados] = useState([]);
-  const [fretePac, setFretePac] = useState(null); // Estado para armazenar o valor do frete
-  const [cepDestino, setCepDestino] = useState(""); // Estado para armazenar o valor do CEP
+  const [fretePac, setFretePac] = useState(null);
+  const [cepDestino, setCepDestino] = useState("");
 
   const getProduto = useCallback(async () => {
     try {
@@ -32,10 +33,10 @@ const ProdutoPage = () => {
   const getProdutosRelacionados = useCallback(async () => {
     try {
       const { data } = await axios.get(`http://localhost:81/faculdade/admin/api/produto/${id}`);
-      const produtoCategoria = data.categoria; // Obtenha a categoria do produto atual
+      const produtoCategoria = data.categoria;
       const response = await axios.get('http://localhost:81/faculdade/admin/api/produtos');
       const produtos = response.data;
-      const produtosRelacionados = produtos.filter(produto => produto.categoria === produtoCategoria); // Filtrar produtos com a mesma categoria
+      const produtosRelacionados = produtos.filter(produto => produto.categoria === produtoCategoria);
       setProdutosRelacionados(produtosRelacionados);
     } catch (error) {
       console.warn(error);
@@ -67,7 +68,7 @@ const ProdutoPage = () => {
   };
 
   const CEPVALOR = async () => {
-    const tipo_do_frete = 41106; // Sedex: 40010   |  Pac: 41106
+    const tipo_do_frete = 41106;
     const peso = 6;
     const valor = produtoRepo.valor;
     const altura = 6;
@@ -91,20 +92,9 @@ const ProdutoPage = () => {
     }
   };
 
-  const renderMarkdownToHTML = (markdown) => {
-    const lines = markdown.split('\n');
-    const html = lines.map((line, index) => {
-      if (line.startsWith('# ')) {
-        return <Title key={index} level={1}>{line.replace('# ', '')}</Title>;
-      } else if (line.startsWith('## ')) {
-        return <Title key={index} level={2}>{line.replace('## ', '')}</Title>;
-      } else if (line.startsWith('### ')) {
-        return <Title key={index} level={3}>{line.replace('### ', '')}</Title>;
-      } else {
-        return <Paragraph key={index}>{line}</Paragraph>;
-      }
-    });
-    return html;
+  const formatDescription = (description) => {
+    const formattedDescription = parse(description);
+    return formattedDescription;
   };
 
   return (
@@ -112,6 +102,14 @@ const ProdutoPage = () => {
       <CustomHeader />
       <Content style={{ padding: '0 50px' }}>
         <div style={{ background: '#fff', padding: 24 }}>
+          <Breadcrumb style={{ marginBottom: '24px' }}>
+            <Breadcrumb.Item>
+              <Link to="/">Home</Link>
+            </Breadcrumb.Item>
+            {produtoRepo && (
+              <Breadcrumb.Item>{produtoRepo.produto}</Breadcrumb.Item>
+            )}
+          </Breadcrumb>
           {produtoRepo ? (
             <Row gutter={[24, 24]}>
               <Col span={12}>
@@ -127,8 +125,8 @@ const ProdutoPage = () => {
                   {produtoRepo.produto}
                 </Title>
                 <div style={{ fontSize: '16px', marginBottom: '24px', color: '#555' }}>
-              {renderMarkdownToHTML(produtoRepo.descricao)}
-            </div>
+                  {formatDescription(produtoRepo.descricao)}
+                </div>
                 <Row gutter={16} style={{ marginBottom: '24px' }}>
                   <Col span={12}>
                     <Title level={4} style={{ fontWeight: 'bold' }}>
@@ -149,41 +147,44 @@ const ProdutoPage = () => {
                     </Title>
                   </Col>
                 </Row>
-                <Button
-                  type="primary"
-                  icon={<ShoppingCartOutlined />}
-                  onClick={() => handleAdicionarAoCarrinho(produtoRepo)}
-                >
-                  Adicionar ao Carrinho
-                </Button>
-                <div style={{ marginTop: '24px' }}>
-                  <Input placeholder="CEP de destino" value={cepDestino} onChange={e => setCepDestino(e.target.value)} />
-                  <Button type="primary" onClick={CEPVALOR}>Calcular Frete</Button>
-                  {fretePac && (
-                    <label style={{ marginLeft: '12px' }}>Valor do Frete: R$ {fretePac.Valor}</label>
-
-                  )}
-
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <Button
+                    type="primary"
+                    icon={<ShoppingCartOutlined />}
+                    onClick={() => handleAdicionarAoCarrinho(produtoRepo)}
+                    style={{ marginRight: '12px' }}
+                  >
+                    Adicionar ao Carrinho
+                  </Button>
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <Input placeholder="CEP de destino" value={cepDestino} onChange={e => setCepDestino(e.target.value)} style={{ marginRight: '12px' }} />
+                    <Button type="primary" onClick={CEPVALOR}>Calcular Frete</Button>
+                    {fretePac && (
+                      <label style={{ marginLeft: '12px' }}>Valor do Frete: R$ {fretePac.Valor}</label>
+                    )}
+                  </div>
                 </div>
               </Col>
             </Row>
           ) : (
-            <p>Carregando...</p>
+            <div>
+              <Title level={3}>Produto não encontrado</Title>
+            </div>
           )}
-        </div>
-      </Content>
-      <Content style={{ padding: '0 50px', marginTop: '24px' }}>
-        <div style={{ background: '#fff', padding: 24 }}>
-          <Title level={3} style={{ marginBottom: '12px' }}>
-            Produtos Relacionados
-          </Title>
-          <Row gutter={[24, 24]}>
-            {produtosRelacionados.map((produto) => (
-              <Col span={8} key={produto.id}>
-                <CardBase produto={produto} />
-              </Col>
-            ))}
-          </Row>
+          {produtosRelacionados.length > 0 && (
+            <div>
+              <Title level={3} style={{ fontSize: '24px', marginBottom: '12px', fontWeight: 'bold' }}>
+                Produtos Relacionados
+              </Title>
+              <Row gutter={[24, 24]}>
+                {produtosRelacionados.map((produto) => (
+                  <Col span={6} key={produto.id}>
+                    <CardBase produto={produto} />
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          )}
         </div>
       </Content>
       <Footer style={{ textAlign: 'center' }}>Lojinha do Kevin @2023</Footer>
